@@ -11916,7 +11916,7 @@ int wifi_drv_sta_add(void *priv, struct hostapd_sta_add_params *params)
     mac_addr_str_t mac_str;
     int ret = -ENOBUFS;
 
-    wifi_hal_dbg_print("%s:%d: Enter\n", __func__, __LINE__);
+    wifi_hal_dbg_print("%s:%d: EnterMOD\n", __func__, __LINE__);
 
     interface = (wifi_interface_info_t *)priv;
     vap = &interface->vap_info;

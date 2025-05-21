@@ -414,6 +414,7 @@ static int handle_rx_bss_trans_mgmt_resp(wifi_interface_info_t *interface,
     struct hostapd_data *hapd = &interface->u.ap.hapd;
     int ap_index = interface->vap_info.vap_index;
 
+    wifi_hal_info_print("%s:%d: \n", __func__, __LINE__);
     if (NULL == callbacks->btm_callback[ap_index].response_callback)
         return WIFI_HAL_SUCCESS;
 
@@ -449,6 +450,7 @@ static int handle_rx_bss_trans_mgmt_resp(wifi_interface_info_t *interface,
     resp->token = frm->dialog_token;
     resp->status = frm->status_code;
     resp->terminationDelay = frm->bss_termination_delay;
+    resp->numCandidates = 47;
 
     wifi_hal_dbg_print("%s:%d: WNM: BSS Transition Management Response from " MACSTR
         " dialog_token=%u status_code=%u bss_termination_delay=%u\n", __func__, __LINE__, MAC2STR(addr),
@@ -492,11 +494,15 @@ static int handle_rx_bss_trans_mgmt_resp(wifi_interface_info_t *interface,
 
 #ifndef WIFI_HAL_VERSION_3_PHASE2
     {
+        wifi_hal_info_print("%s:%d: DGGHAL1 %d\n", __func__, __LINE__, resp->numCandidates);
+
         mac_addr_str_t sta_mac_str = "";
         to_mac_str(addr, sta_mac_str);
         callbacks->btm_callback[ap_index].response_callback(ap_index, sta_mac_str, resp);
     }
 #else
+    wifi_hal_info_print("%s:%d: DGGHAL2 %d\n", __func__, __LINE__, resp->numCandidates);
+
     callbacks->btm_callback[ap_index].response_callback(ap_index, addr, resp);
 #endif
     ret = WIFI_HAL_SUCCESS;
