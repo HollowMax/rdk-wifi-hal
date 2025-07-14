@@ -10972,6 +10972,10 @@ int wifi_drv_send_action(void *priv,
                        "freq=%u MHz wait=%d ms no_cck=%d offchanok=%d)\n",
         __func__, __LINE__, interface->index, freq, wait_time, no_cck, offchanok);
 
+    for(int i = 0; i < data_len; i++){
+	    wifi_hal_dbg_print("%s:%d: DGG HAL %02X \n", __func__, __LINE__, data[i]);
+    }
+
     buf = (unsigned char*) calloc(sizeof(struct ieee80211_hdr) + data_len, sizeof(unsigned char));
     if (buf == NULL)
         return ret;
