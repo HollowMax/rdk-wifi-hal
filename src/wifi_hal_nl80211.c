@@ -1890,7 +1890,9 @@ int process_frame_mgmt(wifi_interface_info_t *interface, struct ieee80211_mgmt *
 #endif
 
     u16 reasoncode;
+    wifi_hal_info_print("%s:%d: DGG new ent\n", __func__, __LINE__);
     if (mgmt == NULL) {
+	    wifi_hal_info_print("%s:%d: DGG ret 2", __func__, __LINE__);
         return -1;
     }
 
@@ -1938,8 +1940,11 @@ int process_frame_mgmt(wifi_interface_info_t *interface, struct ieee80211_mgmt *
     stype = WLAN_FC_GET_STYPE(fc);
 
     if (is_wifi_hal_rate_limit_block(stype, sta)) {
+	    wifi_hal_info_print("%s:%d: DGG ret 1", __func__, __LINE__);
         return 0;
     }
+
+    wifi_hal_info_print("%s:%d: DGG new ent st %d \n", __func__, __LINE__, stype);
 
     switch(stype) {
     case WLAN_FC_STYPE_AUTH:
@@ -2405,6 +2410,7 @@ int process_mgmt_frame(struct nl_msg *msg, void *arg)
     int link_id = -1;
     uint32_t freq = 0;
 #endif // HOSTAPD_VERSION >= 211 && CONFIG_GENERIC_MLO
+    wifi_hal_dbg_print("%s:%d: DGG MGMT REQ 1\n", __func__, __LINE__);
 
     gnlh = nlmsg_data(nlmsg_hdr(msg));
     nla_parse(tb, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
@@ -2678,6 +2684,7 @@ void recv_data_frame(wifi_interface_info_t *interface)
     vap = &interface->vap_info;
     saddr_len = sizeof(saddr);
     memset(buff, 0, sizeof(buff));
+    wifi_hal_dbg_print("%s:%d: DGG MGMT REQ 2\n", __func__, __LINE__);
 
     //Receive a network packet and copy in to buffer
     sock = (vap->vap_mode == wifi_vap_mode_ap) ? interface->u.ap.br_sock_fd :
@@ -3168,6 +3175,7 @@ void *nl_recv_func(void *arg)
 
     prctl(PR_SET_NAME,  __func__, 0, 0, 0);
 
+    wifi_hal_error_print("%s:%d: DGG 30 1 \n", __func__, __LINE__);
     while (1) {
 
         prepare_interface_fdset(priv);
@@ -3197,6 +3205,7 @@ void *nl_recv_func(void *arg)
 
         if (FD_ISSET(priv->nl_event_fd, &priv->drv_rfds)) {
             res = nl_recvmsgs((struct nl_sock *)priv->nl_event, priv->nl_cb);
+	    wifi_hal_error_print("%s:%d: DGG nl_recbmsg 1\n", __func__, __LINE__);
             if (res < 0) {
                 wifi_hal_error_print("%s:%d: sock:%d nl_recvmsgs failed:%d (%s), errno:%d (%s)\n",
                     __func__, __LINE__, priv->nl_event_fd, res, nl_geterror(res), errno,
@@ -3207,6 +3216,7 @@ void *nl_recv_func(void *arg)
         if (mgmt_fd_isset(priv, &interface)) {
             //wifi_hal_dbg_print("%s:%d:Mgmt frame descriptor is set\n", __func__, __LINE__);
             res = nl_recvmsgs((struct nl_sock *)interface->nl_event, interface->nl_cb);
+	    wifi_hal_error_print("%s:%d: DGG nl_recbmsg 2\n", __func__, __LINE__);
             if (res < 0) {
                 wifi_hal_error_print("%s:%d: interface:%s ifindex:%d ifnametoindex:%d sock:%d "
                                     "nl_recvmsgs failed:%d (%s), errno:%d (%s)\n",
@@ -3223,6 +3233,7 @@ void *nl_recv_func(void *arg)
         if (spurious_fd_isset(priv, &interface)) {
             res = nl_recvmsgs((struct nl_sock *)interface->spurious_nl_event,
                 interface->spurious_nl_cb);
+	    wifi_hal_error_print("%s:%d: DGG nl_recbmsg 10\n", __func__, __LINE__);
             if (res < 0) {
                 wifi_hal_error_print("%s:%d: interface:%s ifindex:%d ifnametoindex:%d sock:%d "
                                      "spurious nl_recvmsgs failed:%d (%s), errno:%d (%s)\n",
@@ -3235,6 +3246,7 @@ void *nl_recv_func(void *arg)
 #ifdef EAPOL_OVER_NL
         if (bss_fd_isset(priv, &interface)) {
             res = nl_recvmsgs((struct nl_sock *)interface->bss_nl_connect_event, interface->bss_nl_cb);
+	    wifi_hal_error_print("%s:%d: DGG nl_recbmsg 3\n", __func__, __LINE__);
             if (res < 0) {
                 wifi_hal_error_print("%s:%d: interface:%s ifindex:%d ifnametoindex:%d sock:%d "
                                      "eapol nl_recvmsgs failed:%d (%s), errno:%d (%s)\n",
@@ -3352,6 +3364,7 @@ struct nl_handle *nl_create_handle(struct nl_cb *cb, const char *dbg)
     uint32_t pid = getpid() & 0x3FFFFF;
     int i;
 
+    wifi_hal_error_print("%s:%d: DGG 30 2 \n", __func__, __LINE__);
     handle = (struct nl_handle *)nl_socket_alloc_cb(cb);
     if (handle == NULL) {
         wifi_hal_error_print("%s:%d: Failed to allocate netlink callbacks (%s)\n", __func__, __LINE__, dbg);
@@ -3454,6 +3467,7 @@ static int nl80211_nlmsg_read(struct nl_sock *sock, struct nl_cb *cb)
     }
 
     ret = nl_recvmsgs(sock, cb);
+    wifi_hal_error_print("%s:%d: DGG nl_recbmsg 1\n", __func__, __LINE__);
     if (ret < 0) {
         wifi_hal_error_print("%s:%d: failed to receive nl message, err %d (%s)\n", __func__,
             __LINE__, ret, nl_geterror(ret));
@@ -3515,6 +3529,7 @@ static int execute_send_and_recv(struct nl_cb *cb_ctx,
     nl_cb_set(cb, NL_CB_ACK, NL_CB_CUSTOM, ack_handler, &err);
 
     if (valid_handler) {
+	    wifi_hal_error_print("%s:%d: DGG 30 3 \n", __func__, __LINE__);
         nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, valid_handler, valid_data);
     }
 
@@ -3582,6 +3597,7 @@ int nl80211_send_and_recv(struct nl_msg *msg,
 {
     char thread_id[24];
     wifi_netlink_thread_info_t *nl_info = NULL;
+    wifi_hal_error_print("%s:%d: DGG 30 2 \n", __func__, __LINE__);
 
     snprintf(thread_id, sizeof(thread_id), "%lu", pthread_self());
 
@@ -3676,6 +3692,7 @@ static int nl_get_multicast_id(const char *family, const char *group)
         return -1;
     }
 
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     ret = nl80211_send_and_recv(msg, family_handler, &res, NULL, NULL);
     if (ret == 0)
         ret = res.id;
@@ -6561,6 +6578,7 @@ int nl80211_kick_device(wifi_interface_info_t *interface, mac_address_t addr)
 
     nla_put(msg, NL80211_ATTR_MAC, sizeof(mac_address_t), addr);
 
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     if (nl80211_send_and_recv(msg, kick_device_handler, interface, NULL, NULL)) {
         wifi_hal_error_print("%s:%d: Error getting sta info\n", __func__, __LINE__);
         return -1;
@@ -6580,6 +6598,7 @@ int nl80211_read_sta_data(wifi_interface_info_t *interface, const u8 *addr)
 
     nla_put(msg, NL80211_ATTR_MAC, ETH_ALEN, addr);
 
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     if (nl80211_send_and_recv(msg, get_sta_handler, interface, NULL, NULL)) {
         wifi_hal_error_print("%s:%d: Error getting sta info\n", __func__, __LINE__);
         return -1;
@@ -6599,6 +6618,7 @@ int update_channel_flags()
         return -1;
     }
 
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     if (nl80211_send_and_recv(msg, phy_info_handler, &g_wifi_hal, NULL, NULL)) {
         return -1;
     }
@@ -6636,6 +6656,7 @@ static u32 get_nl80211_protocol_features(int nl_id)
         return 0;
     }
 
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     if (nl80211_send_and_recv(msg, protocol_feature_handler, &feat, NULL, NULL) == 0) {
         return feat;
     }
@@ -6768,6 +6789,7 @@ int init_nl80211()
         return -1;
     }
 
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     if (nl80211_send_and_recv(msg, wiphy_dump_handler, &g_wifi_hal, NULL, NULL)) {
         return -1;
     }
@@ -6858,6 +6880,7 @@ int init_nl80211()
             return -1;
         }
         nla_put_u32(msg, NL80211_ATTR_WIPHY, radio->index);
+	wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
         if (nl80211_send_and_recv(msg, interface_info_handler, radio, NULL, NULL)) {
             return -1;
         }
@@ -6880,6 +6903,7 @@ void wifi_hal_nl80211_wps_pbc(unsigned int ap_index)
     union wpa_event_data event;
     wifi_interface_info_t *interface;
 
+    wifi_hal_dbg_print("%s:%d: DGG MGMT REQ 3\n", __func__, __LINE__);
     interface = get_interface_by_vap_index(ap_index);
 
     if (interface->u.ap.conf.wps_state == 0) {
@@ -6978,6 +7002,7 @@ int nl80211_enable_ap(wifi_interface_info_t *interface, bool enable)
 
     wifi_hal_dbg_print("%s:%d: %s ap on interface: %d\n", __func__, __LINE__,
         enable ? "Starting" : "Stopping", interface->index);
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     if ((ret = nl80211_send_and_recv(msg, ap_enable_handler, &g_wifi_hal, NULL, NULL))) {
         wifi_hal_error_print("%s:%d: Error stopping/starting ap: %d (%s) \n", __func__, __LINE__, ret, strerror(-ret));
         return RETURN_ERR;
@@ -6998,6 +7023,7 @@ int nl80211_delete_interface(uint32_t radio_index, char *if_name, uint32_t if_in
     }
 
     wifi_hal_dbg_print("%s:%d: Sopping ap on interface: %d\n", __func__, __LINE__, interface->index);
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     if ((ret = nl80211_send_and_recv(msg, ap_stop_handler, &g_wifi_hal, NULL, NULL))) {
         wifi_hal_dbg_print("%s:%d: Error stopping ap: %s\n", __func__, __LINE__, strerror(-ret));
     }
@@ -7016,6 +7042,7 @@ int nl80211_delete_interface(uint32_t radio_index, char *if_name, uint32_t if_in
     wifi_hal_dbg_print("%s:%d: Deleting interface:%s (%d) on radio:%d\n", __func__, __LINE__,
             if_name, if_index, radio_index);
 
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     if ((ret = nl80211_send_and_recv(msg, interface_del_handler, &g_wifi_hal, NULL, NULL))) {
         wifi_hal_dbg_print("%s:%d: Error in deleting interface: %d (%s) \n", __func__, __LINE__, ret, strerror(-ret));
         return -1;
@@ -7077,6 +7104,7 @@ int nl80211_init_primary_interfaces()
 
         nla_put_u32(msg, NL80211_ATTR_IFTYPE, NL80211_IFTYPE_AP);
 
+    wifi_hal_error_print("%s:%d: DGG 31 1\n", __func__, __LINE__);
         if ((ret = nl80211_send_and_recv(msg, interface_info_handler, radio, NULL, NULL))) {
             char *interface_name = wifi_hal_get_interface_name(interface);
 
@@ -7091,6 +7119,7 @@ int nl80211_init_primary_interfaces()
                 msg = nl80211_drv_cmd_msg(g_wifi_hal.nl80211_id, interface, 0,
                     NL80211_CMD_SET_INTERFACE);
                 nla_put_u32(msg, NL80211_ATTR_IFTYPE, NL80211_IFTYPE_AP);
+    wifi_hal_error_print("%s:%d: DGG 31 2 \n", __func__, __LINE__);
                 ret = nl80211_send_and_recv(msg, interface_info_handler, radio, NULL, NULL);
                 if (ret) {
                     wifi_hal_error_print("%s:%d: Error updating %s interface even after interface "
@@ -7170,6 +7199,7 @@ int nl80211_init_radio_info()
             return -1;
         }
 
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
         if (nl80211_send_and_recv(msg, wiphy_get_info_handler,
             radio, NULL, NULL)) {
             return -1;
@@ -7538,6 +7568,7 @@ int nl80211_update_wiphy(wifi_radio_info_t *radio)
 #if defined(VNTXER5_PORT)
     platform_set_radio_mld_bonding(radio);
 #endif
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     if ((ret = nl80211_send_and_recv(msg, wiphy_set_info_handler, &g_wifi_hal, NULL, NULL))) {
         wifi_hal_info_print("%s:%d: Error updating dev:%d error: %d (%s)\n",
             __func__, __LINE__, radio->index, ret, strerror(-ret));
@@ -7584,6 +7615,7 @@ int nl80211_update_wiphy(wifi_radio_info_t *radio)
             }
 #endif // HOSTAPD_VERSION >= 211 && CONFIG_GENERIC_MLO
 
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
            if ((ret = nl80211_send_and_recv(msg, wiphy_set_info_handler, &g_wifi_hal, NULL, NULL))) {
                wifi_hal_error_print("%s:%d: reconfig error, updating dev:%d error: %d (%s) \n",
                                   __func__, __LINE__, radio->index, ret, strerror(-ret));
@@ -7717,6 +7749,7 @@ int nl80211_set_regulatory_domain(wifi_countrycode_type_t country_code)
 
     msg = nl80211_drv_cmd_msg(g_wifi_hal.nl80211_id, NULL, 0, NL80211_CMD_REQ_SET_REG);
     nla_put_string(msg, NL80211_ATTR_REG_ALPHA2, alpha2);
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     if ((ret = nl80211_send_and_recv(msg, regulatory_domain_set_info_handler, &g_wifi_hal, NULL, NULL))) {
         wifi_hal_dbg_print("%s:%d: Error updating regulatory_domain error: %d (%s)\n",
             __func__, __LINE__, ret, strerror(-ret));
@@ -7795,6 +7828,7 @@ int nl80211_register_mgmt_frames(wifi_interface_info_t *interface)
         return -1;
     }
 
+    wifi_hal_error_print("%s:%d: DGG 30 3 \n", __func__, __LINE__);
     nl_cb_set(interface->nl_cb, NL_CB_SEQ_CHECK, NL_CB_CUSTOM, no_seq_check, NULL);
     nl_cb_set(interface->nl_cb, NL_CB_VALID, NL_CB_CUSTOM, process_mgmt_frame, interface);
 
@@ -7937,6 +7971,7 @@ int nl80211_update_interface(wifi_interface_info_t *interface)
 #ifndef TARGET_GEMINI7_2
         nla_put_u32(msg, NL80211_ATTR_IFTYPE, NL80211_IFTYPE_AP);
 
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
         if ((ret = nl80211_send_and_recv(msg, interface_info_handler, radio, NULL, NULL))) {
             wifi_hal_error_print("%s:%d: Error updating %s interface on dev:%d error: %d (%s)\n",
                         __func__, __LINE__, interface->name, radio->index, ret, strerror(-ret));
@@ -7968,6 +8003,7 @@ int nl80211_update_interface(wifi_interface_info_t *interface)
         }
     }
 
+    wifi_hal_error_print("%s:%d: DGG 31 2\n", __func__, __LINE__);
     if ((ret = nl80211_send_and_recv(msg, interface_info_handler, radio, NULL, NULL))) {
         wifi_hal_error_print("%s:%d: Error updating %s interface on dev:%d error: %d (%s)\n",
             __func__, __LINE__, interface->name, radio->index, ret, strerror(-ret));
@@ -8026,6 +8062,7 @@ int nl80211_create_interface(wifi_radio_info_t *radio, wifi_vap_info_t *vap, wif
     }
 #endif
 
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     if ((ret = nl80211_send_and_recv(msg, interface_info_handler, radio, NULL, NULL))) {
         wifi_hal_error_print("%s:%d: Error creating %s interface on dev:%d error: %d (%s)\n", __func__, __LINE__,
             ifname, radio->index, ret, strerror(-ret));
@@ -8230,6 +8267,7 @@ int nl80211_get_scan_results(wifi_interface_info_t *interface)
 
     scan_results_data.arg = interface;
 
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     ret = nl80211_send_and_recv(msg, scan_info_handler, interface, scan_results_handler, &scan_results_data);
     if (ret) {
         pthread_mutex_lock(&interface->scan_state_mutex);
@@ -9458,6 +9496,7 @@ int nl80211_get_channel_bw_conn(wifi_interface_info_t *interface)
     }
 
     nla_put_u32(msg, NL80211_ATTR_IFINDEX, interface->index);
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     if (nl80211_send_and_recv(msg, conn_get_interface_handler, interface, NULL, NULL)) {
         return -1;
     }
@@ -10615,6 +10654,7 @@ int nl80211_update_beacon_params(wifi_interface_info_t *interface)
         return -1;
     }
 
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     ret = nl80211_send_and_recv(msg, beacon_info_handler, &g_wifi_hal, NULL, NULL);
     if (ret == 0) {
         return 0;
@@ -10656,6 +10696,7 @@ static int nl80211_send_frame_cmd(wifi_interface_info_t *interface, unsigned int
 #endif // HOSTAPD_VERSION >= 211 && CONFIG_GENERIC_MLO
 
     cookie = 0;
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     ret = nl80211_send_and_recv(msg, cookie_handler, &cookie, NULL, NULL);
     msg = NULL;
     if (ret) {
@@ -11016,9 +11057,11 @@ int wifi_drv_vendor_cmd(void *priv, unsigned int vendor_id,
     }
 
     if (OUI_LTQ == vendor_id) {
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
         return nl80211_send_and_recv(msg, vendor_ltq_reply_handler, buf, NULL, NULL);
     }
     else {
+    wifi_hal_error_print("%s:%d: DGG 31 2\n", __func__, __LINE__);
         return nl80211_send_and_recv(msg, vendor_reply_handler, buf, NULL, NULL);
     }
 #endif //CONFIG_VENDOR_COMMANDS
@@ -11049,6 +11092,7 @@ int wifi_drv_vendor_cmd(void *priv, unsigned int vendor_id,
         return -ENOBUFS;
     }
 
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     return nl80211_send_and_recv(msg, vendor_reply_handler, buf, NULL, NULL);
 #endif //CONFIG_VENDOR_COMMANDS
 
@@ -11720,6 +11764,7 @@ void wifi_send_wpa_supplicant_event(int ap_index, uint8_t *frame, int len)
     union wpa_event_data event;
     wifi_interface_info_t *interface = get_interface_by_vap_index(ap_index);
 
+    wifi_hal_dbg_print("%s:%d: DGG MGMT REQ 5\n", __func__, __LINE__);
     os_memset(&event, 0, sizeof(event));
     event.rx_mgmt.frame = (unsigned char *)frame;
     event.rx_mgmt.frame_len = len;
@@ -12060,6 +12105,7 @@ int wifi_drv_get_inact_sec(void *priv, const u8 *addr)
     }
     nla_put(msg, NL80211_ATTR_MAC, ETH_ALEN, addr);
 
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     ret = nl80211_send_and_recv(msg, get_sta_inactive_handler, &data, NULL, NULL);
     if (ret) {
         wifi_hal_error_print("nl80211: Station get failed: ret=%d (%s)\n", ret, strerror(-ret));
@@ -12153,6 +12199,7 @@ int wifi_drv_get_seqnum(const char *iface, void *priv, const u8 *addr, int idx, 
 
     memset(seq, 0, 6);
 
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     return nl80211_send_and_recv(msg, get_key_handler, seq, NULL, NULL);
 }
 
@@ -12194,6 +12241,7 @@ int wlan_nl80211_create_interface(char *ifname, uint32_t if_type, int wds, uint8
         }
     }
 
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     if ((ret = nl80211_send_and_recv(msg, interface_info_handler, radio, NULL, NULL))) {
         wifi_hal_error_print("%s:%d: Error creating %s interface on dev:%d error: %d (%s)\n", __func__, __LINE__,
             ifname, radio->index, ret, strerror(-ret));
@@ -13808,6 +13856,7 @@ static int nl80211_set_regulatory_flags(struct phy_info_arg *results)
         }
     } */
 
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     return nl80211_send_and_recv(msg, nl80211_get_reg, results, NULL, NULL);
 }
 #endif // CONFIG_HW_CAPABILITIES || VNTXER5_PORT || TARGET_GEMINI7_2
@@ -13846,6 +13895,7 @@ wifi_drv_get_hw_feature_data(void *priv, u16 *num_modes, u16 *flags, u8 *dfs_dom
         return NULL;
     }
     
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     if (nl80211_send_and_recv(msg, phy_info_get_hw_feature_handler, &result, NULL, NULL) == 0) {
         struct hostapd_hw_modes *modes;
         
@@ -14897,6 +14947,7 @@ int wifi_drv_set_ap(void *priv, struct wpa_driver_ap_params *params)
 
     } else {
 #endif
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     ret = nl80211_send_and_recv(msg, beacon_info_handler, &g_wifi_hal, NULL, NULL);
     if (ret != 0) {
         wifi_hal_error_print("%s:%d: Failed to set beacon parameter for interface: %s error: %d(%s)\n", __func__, __LINE__, interface->name, ret, strerror(-ret));
@@ -15156,6 +15207,7 @@ int nl80211_register_spurious_frames(wifi_interface_info_t *interface)
         return -1;
     }
 
+    wifi_hal_error_print("%s:%d: DGG 30 3 \n", __func__, __LINE__);
     nl_cb_set(interface->spurious_nl_cb, NL_CB_SEQ_CHECK, NL_CB_CUSTOM, no_seq_check, NULL);
     nl_cb_set(interface->spurious_nl_cb, NL_CB_VALID, NL_CB_CUSTOM, process_mgmt_frame, interface);
 
@@ -17626,6 +17678,7 @@ static int get_radio_tx_power(wifi_interface_info_t *interface, ULONG *tx_power)
         wifi_hal_error_print("%s:%d Failed to create NL command\n", __func__, __LINE__);
         return RETURN_ERR;
     }
+    wifi_hal_error_print("%s:%d: DGG 31 \n", __func__, __LINE__);
     ret = nl80211_send_and_recv(msg, get_radio_txpwr_handler, tx_power, NULL, NULL);
     if (ret) {
         wifi_hal_error_print("%s:%d Failed to send NL message %d %s\n", __func__, __LINE__, ret,

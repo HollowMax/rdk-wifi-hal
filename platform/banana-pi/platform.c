@@ -542,6 +542,7 @@ static int get_sta_list(wifi_interface_info_t *interface, sta_list_t *sta_list)
         return -1;
     }
 
+        wifi_hal_stats_error_print("%s:%d DGG 31\n", __func__, __LINE__);
     ret = nl80211_send_and_recv(msg, get_sta_list_handler, sta_list, NULL, NULL);
     if (ret < 0) {
         wifi_hal_stats_error_print("%s:%d Failed to execute NL command\n", __func__, __LINE__);
@@ -643,6 +644,7 @@ static int get_sta_stats(wifi_interface_info_t *interface, mac_address_t mac, wi
 
     nla_put(msg, NL80211_ATTR_MAC, sizeof(mac_address_t), mac);
 
+        wifi_hal_stats_error_print("%s:%d DGG 31\n", __func__, __LINE__);
     ret = nl80211_send_and_recv(msg, get_sta_stats_handler, dev, NULL, NULL);
     if (ret < 0) {
         wifi_hal_error_print("%s:%d Failed to execute NL command\n", __func__, __LINE__);

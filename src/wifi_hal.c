@@ -4431,13 +4431,16 @@ INT wifi_hal_BTMQueryRequest_callback_register(UINT apIndex,
                                             wifi_BTMResponse_callback btmResponseCallback)
 {
     wifi_device_callbacks_t *callbacks;
+    wifi_hal_dbg_print("%s:%d: DGG reg apidx: %d\n", __func__, __LINE__, apIndex);
 
     if (apIndex >= MAX_AP_INDEX)
         return RETURN_ERR;
 
     callbacks = get_hal_device_callbacks();
-    if (callbacks == NULL)
+    if (callbacks == NULL) {
+	    wifi_hal_dbg_print("%s:%d: DGG NULL cb. apidx: %d\n", __func__, __LINE__, apIndex);
         return RETURN_ERR;
+    }
 
     callbacks->btm_callback[apIndex].query_callback = btmQueryCallback;
     callbacks->btm_callback[apIndex].response_callback = btmResponseCallback;

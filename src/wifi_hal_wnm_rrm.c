@@ -152,6 +152,8 @@ static int wifi_ieee802_11_send_bss_trans_mgmt_request(struct hostapd_data *hapd
     u8 *pos;
     int res;
 
+    wifi_hal_dbg_print("DGG 3");
+
     mgmt = os_zalloc(sizeof(*mgmt) + nei_rep_len + mbo_len);
     if (mgmt == NULL)
         return -1;
@@ -217,6 +219,8 @@ static int handle_rx_bss_trans_mgmt_query(wifi_interface_info_t *interface,
     bool wnm_bss_trans_query_auto_resp = interface->wnm_bss_trans_query_auto_resp;
 #endif
     u8 *nei_rep_tmp = nei_rep;
+
+    wifi_hal_dbg_print("DGG 2");
 
     pthread_mutex_lock(&g_wifi_hal.hapd_lock);
     mutex_locked = true;
@@ -414,8 +418,10 @@ static int handle_rx_bss_trans_mgmt_resp(wifi_interface_info_t *interface,
     struct hostapd_data *hapd = &interface->u.ap.hapd;
     int ap_index = interface->vap_info.vap_index;
 
-    if (NULL == callbacks->btm_callback[ap_index].response_callback)
-        return WIFI_HAL_SUCCESS;
+    if (NULL == callbacks->btm_callback[ap_index].response_callback) {
+	    wifi_hal_dbg_print("DGG Err ap_index %d \n", ap_index);
+        return WIFI_HAL_UNSUPPORTED;
+    }
 
     pthread_mutex_lock(&g_wifi_hal.hapd_lock);
     mutex_locked = true;
@@ -571,6 +577,8 @@ int handle_wnm_action_frame(wifi_interface_info_t *interface, const mac_address_
     payload = ((const u8 *) mgmt) + IEEE80211_HDRLEN + 1;
     action = *payload;
     plen = len - IEEE80211_HDRLEN - 1;
+
+    wifi_hal_dbg_print("DGG hal action %d\n", action);
 
     switch (action) {
         case WNM_BSS_TRANS_MGMT_QUERY:

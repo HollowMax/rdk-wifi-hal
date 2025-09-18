@@ -1928,6 +1928,7 @@ static int get_radio_phy_temp(wifi_interface_info_t *interface, unsigned int *te
         return RETURN_ERR;
     }
 
+        wifi_hal_error_print("%s:%d DGG 31\n", __func__, __LINE__);
     ret = nl80211_send_and_recv(msg, get_radio_phy_temp_handler, temp, NULL, NULL);
     if (ret) {
         wifi_hal_error_print("%s:%d Failed to send NL message\n", __func__, __LINE__);
@@ -2439,6 +2440,7 @@ static int get_sta_list(wifi_interface_info_t *interface, sta_list_t *sta_list)
         return RETURN_ERR;
     }
 
+        wifi_hal_error_print("%s:%d DGG 31\n", __func__, __LINE__);
     ret = nl80211_send_and_recv(msg, get_sta_list_handler, sta_list, NULL, NULL);
     if (ret) {
         wifi_hal_stats_error_print("%s:%d Failed to send NL message\n", __func__, __LINE__);
@@ -2778,6 +2780,7 @@ static int get_sta_stats(wifi_interface_info_t *interface, mac_address_t mac,
     }
     nla_nest_end(msg, nlattr);
 
+        wifi_hal_error_print("%s:%d DGG 31\n", __func__, __LINE__);
     ret = nl80211_send_and_recv(msg, get_sta_stats_handler, stats, NULL, NULL);
     if (ret) {
         wifi_hal_stats_error_print("%s:%d Failed to send NL message\n", __func__, __LINE__);
@@ -2950,6 +2953,7 @@ static int get_channel_stats(wifi_interface_info_t *interface,
         return RETURN_ERR;
     }
 
+        wifi_hal_error_print("%s:%d DGG 31\n", __func__, __LINE__);
     ret = nl80211_send_and_recv(msg, get_channel_stats_handler, &stats, NULL, NULL);
     if (ret) {
         wifi_hal_stats_error_print("%s:%d Failed to send NL message\n", __func__, __LINE__);
@@ -3147,6 +3151,7 @@ static int get_radio_diagnostics(wifi_interface_info_t *interface,
         wifi_hal_stats_error_print("%s:%d Failed to create NL command\n", __func__, __LINE__);
         return RETURN_ERR;
     }
+        wifi_hal_error_print("%s:%d DGG 31\n", __func__, __LINE__);
     ret = nl80211_send_and_recv(msg, get_radio_diag_handler, radioTrafficStats, NULL, NULL);
     if (ret) {
         wifi_hal_stats_error_print("%s:%d Failed to send NL message\n", __func__, __LINE__);

@@ -150,6 +150,7 @@ static void hal_ipc_send_steering_event(UINT steeringgroupIndex, wifi_steering_e
 int hal_ipc_init(void)
 {
     hal_ipc_node_t *node;
+    wifi_hal_error_print("%s:%d: DGG ent\n", __func__, __LINE__);
 
     // Register HAL IPC function as steering event callback
     // in rdk-wifi-hal callbacks struct g_wifi_hal.device_callbacks
