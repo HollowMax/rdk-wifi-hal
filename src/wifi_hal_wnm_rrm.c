@@ -151,6 +151,7 @@ static int wifi_ieee802_11_send_bss_trans_mgmt_request(struct hostapd_data *hapd
     size_t len;
     u8 *pos;
     int res;
+    wifi_hal_dbg_print("DGG 3");
 
     mgmt = os_zalloc(sizeof(*mgmt) + nei_rep_len + mbo_len);
     if (mgmt == NULL)
@@ -221,6 +222,7 @@ static int handle_rx_bss_trans_mgmt_query(wifi_interface_info_t *interface,
     pthread_mutex_lock(&g_wifi_hal.hapd_lock);
     mutex_locked = true;
 
+    wifi_hal_dbg_print("DGG 2");
     enabled = hapd->conf->bss_transition;
 #ifdef CONFIG_MBO
     if (hapd->conf->mbo_enabled)
@@ -571,6 +573,7 @@ int handle_wnm_action_frame(wifi_interface_info_t *interface, const mac_address_
     payload = ((const u8 *) mgmt) + IEEE80211_HDRLEN + 1;
     action = *payload;
     plen = len - IEEE80211_HDRLEN - 1;
+    wifi_hal_dbg_print("DGG hal action %d", action);
 
     switch (action) {
         case WNM_BSS_TRANS_MGMT_QUERY:
